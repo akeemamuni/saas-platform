@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './shared/prisma/prisma.module';
+import { JwtModule } from './shared/jwt/jwt.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { PrismaModule } from './shared/prisma/prisma.module';
         envFilePath: '.env'
     }),
     AuthModule,
-    PrismaModule
+    PrismaModule,
+    JwtModule
   ],
   controllers: [AppController],
   providers: [AppService],
