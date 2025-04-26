@@ -1,10 +1,10 @@
 import * as bcrypt from 'bcrypt';
 
 // Utility functions to hash and verify password
-export async function hashPassword(password: string) {
-    return await bcrypt.hash(password, 10)
+export async function hashValue(value: string) {
+    return await bcrypt.hash(value, 10)
 }
 
-export async function verifyPassword(password: string, hash: string) {
-    return await bcrypt.compare(password, hash)
+export async function verifyValue(value: string, hash: string) {
+    return await bcrypt.compare(value, hash)
 }
