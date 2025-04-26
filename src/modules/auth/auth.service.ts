@@ -3,17 +3,36 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { RegisterDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
-import { hashPassword, verifyPassword } from './utils/hash.util';
+import { hashValue, verifyValue } from './utils/hash.util';
 import { SubscriptionStatus, RoleType } from '@prisma/client';
+import { JwtService } from 'src/shared/jwt/jwt.service';
 import { plainToInstance } from 'class-transformer';
 import { ResponseDTO } from './dto/response.dto';
+import { JwtPayload } from 'src/types/payload.type';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly configService: ConfigService,
-        private readonly prisma: PrismaService
+        private readonly prisma: PrismaService,
+        private readonly jwt: JwtService
     ) {}
+
+    private async genAccessAndRefreshToken(jwtPayload: JwtPayload) {
+        const [accessToken, refreshToken] = await Promise.all([
+            this.jwt.genAccessToken(jwtPayload),
+            this.jwt.genRefreshToken(jwtPayload)
+        ]);
+
+        // Hash and store refresh token
+        const hashedToken = await hashValue(refreshToken);
+        await this.prisma.user.update({
+            where: {id: jwtPayload.userId},
+            data: { hashedToken }
+        });
+
+        return { accessToken, refreshToken };
+    }
 
     async register(payload: RegisterDTO) {
         // const token = this.configService.get<string>('JWT_SECRET');
@@ -23,7 +42,7 @@ export class AuthService {
         // Added layer of checking plan other than DTO
         if (!selectedPlan) throw new Error('Invalid plan..');
         // Hash password
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hashValue(password);
 
         try {
             const transactionResult = await this.prisma.$transaction(
@@ -80,8 +99,48 @@ export class AuthService {
         const user = await this.prisma.user.findFirst({where: { email }});
         if (!user) throw new Error('Invalid credentials...');
         // Verify password
-        const verified = verifyPassword(password, user.password);
+        const verified = verifyValue(password, user.password);
         if (!verified) throw new Error('Invalid credentials...');
-        return plainToInstance(ResponseDTO, user);
+
+        // Create and return JWT tokens
+        const jwtPayload = {
+            userId: user.id,
+            email: user.email,
+            tenantId: user.tenantId,
+            roleId: user.roleId
+        };
+        return await this.genAccessAndRefreshToken(jwtPayload);
+        // return plainToInstance(ResponseDTO, user);
+    }
+
+    async refresh(token: string) {
+        try {
+            // Verify if refresh token is valid
+            const payload = await this.jwt.verifyToken(token, true);
+
+            // Find user and verify if user has hashed token
+            const user = await this.prisma.user.findUnique({
+                where: { email: payload.email }
+            });
+            if (!user || !user.hashedToken) throw new Error('Access denied..');
+
+            // Verify if both tokens match
+            const verify = await verifyValue(token, user.hashedToken);
+            if (!verify) throw new Error('Access denied...');
+
+            // Generate and return set of tokens
+            const jwtPayload = {
+                userId: payload.userId,
+                email: payload.email,
+                tenantId: payload.tenantId,
+                roleId: payload.roleId
+            };
+
+            return await this.genAccessAndRefreshToken(jwtPayload);
+
+        } catch (error) {
+            // throw new Error('Invalid credentials...');
+            throw error;
+        }
     }
 }
