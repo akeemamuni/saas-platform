@@ -1,4 +1,5 @@
-import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, ValidationPipe, Get, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { RegisterDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
@@ -15,5 +16,16 @@ export class AuthController {
     @Post('login')
     login(@Body(ValidationPipe) loginDto: LoginDTO) {
         return this.authService.login(loginDto);
+    }
+
+    @Post('refresh')
+    refresh(@Body() body: { refreshToken: string }) {
+        return this.authService.refresh(body.refreshToken);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    getProfile(@Req() req) {
+      return req.user;
     }
 }
