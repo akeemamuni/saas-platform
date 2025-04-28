@@ -6,9 +6,10 @@ import { LoginDTO } from './dto/login.dto';
 import { hashValue, verifyValue } from './utils/hash.util';
 import { SubscriptionStatus, RoleType } from '@prisma/client';
 import { JwtService } from 'src/shared/jwt/jwt.service';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ResponseDTO } from './dto/response.dto';
 import { JwtPayload } from 'src/types/payload.type';
+import { JwtPayloadDTO } from './dto/jwt-payload.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,15 +20,26 @@ export class AuthService {
     ) {}
 
     private async genAccessAndRefreshToken(jwtPayload: JwtPayload) {
+        // Payload has to be sanitized
+        const instance = plainToInstance(
+            JwtPayloadDTO,
+            instanceToPlain(jwtPayload),
+            {
+                excludeExtraneousValues: true
+            }
+        );
+        const plainPayloadObj = instanceToPlain(instance);
+        
+        // Create access/refresh token
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwt.genAccessToken(jwtPayload),
-            this.jwt.genRefreshToken(jwtPayload)
+            this.jwt.genAccessToken(plainPayloadObj),
+            this.jwt.genRefreshToken(plainPayloadObj)
         ]);
 
         // Hash and store refresh token
         const hashedToken = await hashValue(refreshToken);
         await this.prisma.user.update({
-            where: {id: jwtPayload.userId},
+            where: {id: plainPayloadObj.id},
             data: { hashedToken }
         });
 
@@ -103,13 +115,7 @@ export class AuthService {
         if (!verified) throw new Error('Invalid credentials...');
 
         // Create and return JWT tokens
-        const jwtPayload = {
-            userId: user.id,
-            email: user.email,
-            tenantId: user.tenantId,
-            roleId: user.roleId
-        };
-        return await this.genAccessAndRefreshToken(jwtPayload);
+        return await this.genAccessAndRefreshToken(user);
         // return plainToInstance(ResponseDTO, user);
     }
 
@@ -129,18 +135,19 @@ export class AuthService {
             if (!verify) throw new Error('Access denied...');
 
             // Generate and return set of tokens
-            const jwtPayload = {
-                userId: payload.userId,
-                email: payload.email,
-                tenantId: payload.tenantId,
-                roleId: payload.roleId
-            };
-
-            return await this.genAccessAndRefreshToken(jwtPayload);
+            return await this.genAccessAndRefreshToken(payload);
 
         } catch (error) {
             // throw new Error('Invalid credentials...');
             throw error;
         }
+    }
+
+    getProfile(user: {}) {
+        return plainToInstance(JwtPayloadDTO, user,
+            {
+                excludeExtraneousValues: true
+            }
+        );
     }
 }

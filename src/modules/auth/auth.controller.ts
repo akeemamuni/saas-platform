@@ -3,6 +3,7 @@ import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { RegisterDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
+import { AuthUser } from 'src/shared/decorators/auth-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -19,13 +20,16 @@ export class AuthController {
     }
 
     @Post('refresh')
-    refresh(@Body() body: { refreshToken: string }) {
+    refresh(@Body(ValidationPipe) body: { refreshToken: string }) {
         return this.authService.refresh(body.refreshToken);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get('me')
-    getProfile(@Req() req) {
-      return req.user;
+    getProfile(@AuthUser() user: {}) {
+        return this.authService.getProfile(user);
     }
+    // getProfile(@Req() req) {
+    //   return req.user;
+    // }
 }
