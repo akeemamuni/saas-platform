@@ -1,6 +1,3 @@
-export interface JwtPayload {
-    userId: string;
-    email: string;
-    tenantId: string;
-    roleId: string;
-}
+import { JwtPayloadDTO } from 'src/modules/auth/dto/jwt-payload.dto';
+
+export type JwtPayload = InstanceType<typeof JwtPayloadDTO>;
