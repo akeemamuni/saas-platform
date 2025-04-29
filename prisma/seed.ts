@@ -33,7 +33,6 @@ async function main() {
                 name: 'Basic',
                 priceInCents: 9900,
                 maxUsers: 5,
-                stripeProductId: 'prod_basic_123',
             },
         }),
         prisma.plan.create({
@@ -41,7 +40,6 @@ async function main() {
                 name: 'Pro',
                 priceInCents: 19900,
                 maxUsers: 20,
-                stripeProductId: 'prod_pro_456',
             },
         }),
     ]);
@@ -73,10 +71,9 @@ async function main() {
         data: {
             tenantId: tenant.id,
             planId: basicPlan.id,
-            stripeSubId: 'sub_abc_123',
             status: SubscriptionStatus.ACTIVE,
             startDate: new Date(),
-            trialEndsAt: new Date(new Date().setDate(new Date().getDate() + 14)),
+            endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
             // trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7-day trial
         },
     });
