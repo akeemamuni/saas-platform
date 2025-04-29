@@ -58,7 +58,7 @@ model Role {
 
 model Plan {
   id            String         @id @default(uuid())
-  name          String
+  name          String         @unique
   priceInCents  Int
   maxUsers      Int
   //   stripeProductId String
