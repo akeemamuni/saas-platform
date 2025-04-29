@@ -96,7 +96,9 @@ export class AuthService {
                     return adminUser;
                 }
             );
-            return plainToInstance(ResponseDTO, transactionResult);
+            return plainToInstance(
+                ResponseDTO, transactionResult, { excludeExtraneousValues: true }
+            );
 
         } catch (error) {
             if (error.code === 'P2002') throw new Error('Invalid email..');
