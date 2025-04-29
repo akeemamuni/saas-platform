@@ -6,6 +6,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './shared/prisma/prisma.module';
 import { JwtModule } from './shared/jwt/jwt.module';
 import { TenantModule } from './modules/tenant/tenant.module';
+import { PlanModule } from './modules/plan/plan.module';
+import { RoleModule } from './modules/role/role.module';
 
 @Module({
   imports: [
@@ -16,7 +18,9 @@ import { TenantModule } from './modules/tenant/tenant.module';
     AuthModule,
     PrismaModule,
     JwtModule,
-    TenantModule
+    TenantModule,
+    PlanModule,
+    RoleModule
   ],
   controllers: [AppController],
   providers: [AppService],
