@@ -28,6 +28,9 @@ export class ResponseDTO extends PartialType(RegisterDTO) {
   
     @Exclude()
     password: string;
+
+    @Exclude()
+    hashedToken: string
 }
 
 // Another method of doing the above
