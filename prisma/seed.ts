@@ -27,7 +27,7 @@ async function main() {
     console.log('✅ Roles seeded');
 
     // 2. Create Plans
-    const [basicPlan, proPlan] = await Promise.all([
+    const [basicPlan, proPlan, entPlan] = await Promise.all([
         prisma.plan.create({
             data: {
                 name: 'Basic',
@@ -40,6 +40,13 @@ async function main() {
                 name: 'Pro',
                 priceInCents: 19900,
                 maxUsers: 20,
+            },
+        }),
+        prisma.plan.create({
+            data: {
+                name: 'Gold',
+                priceInCents: 29900,
+                maxUsers: 75,
             },
         }),
     ]);
@@ -80,12 +87,30 @@ async function main() {
     console.log('✅ Subscription seeded');
 }
 
-main()
-    .then(() => {
-        console.log('🌱 Seeding complete');
-        return prisma.$disconnect();
-    })
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    });
+async function addNewPlan() {
+    console.log('Try to add a new plan...');
+    try {
+        await prisma.plan.create({
+            data: {
+                name: 'Gold',
+                priceInCents: 29900,
+                maxUsers: 75,
+            },
+        });
+        console.log('✅ Plan added successfully..')
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+// main()
+//     .then(() => {
+//         console.log('🌱 Seeding complete');
+//         return prisma.$disconnect();
+//     })
+//     .catch((e) => {
+//         console.error(e);
+//         process.exit(1);
+//     });
+
+addNewPlan();
