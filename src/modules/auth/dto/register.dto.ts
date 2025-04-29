@@ -3,7 +3,8 @@ import { LoginDTO } from './login.dto';
 
 export enum PlanType {
     BASIC = 'Basic',
-    PRO = 'Pro'
+    PRO = 'Pro',
+    GOLD = 'Gold'
 }
 
 export class RegisterDTO extends LoginDTO {
