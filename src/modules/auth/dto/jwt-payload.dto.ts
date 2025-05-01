@@ -1,7 +1,7 @@
 import { Expose, Type } from "class-transformer";
 import { IsString, IsNotEmpty, IsEmail, ValidateNested } from "class-validator";
 
-class RoleDTO {
+export class RoleDTO {
     @Expose()
     @IsString()
     @IsNotEmpty()
