@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { RegisterDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
 import { AuthUser } from 'src/shared/decorators/auth-user.decorator';
+import { JwtPayload } from 'src/shared/types/payload.type';
 
 @Controller('auth')
 export class AuthController {
@@ -26,7 +27,7 @@ export class AuthController {
 
     @Get('me')
     @UseGuards(JwtAuthGuard)
-    getProfile(@AuthUser() user: {}) {
+    getProfile(@AuthUser() user: JwtPayload) {
         return this.authService.getProfile(user);
     }
     // getProfile(@Req() req) {
