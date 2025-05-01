@@ -110,7 +110,10 @@ export class AuthService {
         // const token = this.configService.get<string>('JWT_SECRET');
         const { email, password } = payload;
         // Find user
-        const user = await this.prisma.user.findFirst({where: { email }});
+        const user = await this.prisma.user.findUnique({
+            where: { email },
+            include: { role: true}
+        });
         if (!user) throw new Error('Invalid credentials...');
         // Verify password
         const verified = verifyValue(password, user.password);
@@ -121,10 +124,10 @@ export class AuthService {
         // return plainToInstance(ResponseDTO, user);
     }
 
-    async refresh(token: string) {
+    async refresh(refreshToken: string) {
         try {
             // Verify if refresh token is valid
-            const payload = await this.jwt.verifyToken(token, true);
+            const payload = await this.jwt.verifyToken(refreshToken, true);
 
             // Find user and verify if user has hashed token
             const user = await this.prisma.user.findUnique({
@@ -133,7 +136,7 @@ export class AuthService {
             if (!user || !user.hashedToken) throw new Error('Access denied..');
 
             // Verify if both tokens match
-            const verify = await verifyValue(token, user.hashedToken);
+            const verify = await verifyValue(refreshToken, user.hashedToken);
             if (!verify) throw new Error('Access denied...');
 
             // Generate and return set of tokens

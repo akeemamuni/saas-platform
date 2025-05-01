@@ -1,5 +1,17 @@
-import { Expose } from "class-transformer";
-import { IsString, IsNotEmpty, IsEmail } from "class-validator";
+import { Expose, Type } from "class-transformer";
+import { IsString, IsNotEmpty, IsEmail, ValidateNested } from "class-validator";
+
+class RoleDTO {
+    @Expose()
+    @IsString()
+    @IsNotEmpty()
+    id: string;
+
+    @Expose()
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+}
 
 export class JwtPayloadDTO {
     @Expose()
@@ -18,7 +30,8 @@ export class JwtPayloadDTO {
     tenantId: string;
 
     @Expose()
-    @IsString()
     @IsNotEmpty()
-    roleId: string;
+    @ValidateNested()
+    @Type(() => RoleDTO)
+    role: RoleDTO;
 }
