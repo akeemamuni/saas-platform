@@ -9,6 +9,7 @@ import { TenantModule } from './modules/tenant/tenant.module';
 import { PlanModule } from './modules/plan/plan.module';
 import { RoleModule } from './modules/role/role.module';
 import { UserModule } from './modules/user/user.module';
+import { BillingModule } from './modules/billing/billing.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { UserModule } from './modules/user/user.module';
     TenantModule,
     PlanModule,
     RoleModule,
-    UserModule
+    UserModule,
+    BillingModule
   ],
   controllers: [AppController],
   providers: [AppService],
