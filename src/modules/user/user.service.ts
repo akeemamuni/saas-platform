@@ -12,11 +12,33 @@ import { FindUserResDto } from './dto/response.dto';
 export class UserService {
     constructor(private readonly prisma: PrismaService) {}
 
+    // Check and enforce tenant plan limit
+    private async checkTenantLimit(user: JwtPayload) {
+        // Get tenant subscription
+        const sub = await this.prisma.subscription.findUnique({
+            where: { tenantId: user.tenantId },
+            include: { plan: true }
+        });
+        if (!sub) throw new ForbiddenException('This tenant has no subscription..');
+        // Current number of tenant users
+        const numOfUsers = await this.prisma.user.count({
+            where: { tenantId: user.tenantId }
+        });
+
+        if (numOfUsers >= sub.plan.maxUsers) {
+            throw new ForbiddenException(
+                `Tenant ${user.tenantId} can only have ${sub.plan.maxUsers} total users..`
+            );
+        }
+    }
+
     async createTenantUser(user: JwtPayload, createUserDto: CreateUserDto) {
         // Current user must be tenant admin
         if (user.role.name !== RoleType.ADMIN) {
             throw new ForbiddenException('Only ADMINS Allowed..');
         }
+        // Check and enforce tenant limit
+        await this.checkTenantLimit(user);
         // Hash password
         const hashedPassword = await hashValue(createUserDto.password);
         // Fetch role from DB and create new user
