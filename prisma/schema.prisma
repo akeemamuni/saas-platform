@@ -40,12 +40,12 @@ model User {
 }
 
 model Tenant {
-  id             String        @id @default(uuid())
-  name           String
-  users          User[]
-  subscription   Subscription?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id           String        @id @default(uuid())
+  name         String
+  users        User[]
+  subscription Subscription?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Role {
@@ -57,26 +57,26 @@ model Role {
 }
 
 model Plan {
-  id            String         @id @default(uuid())
-  name          String         @unique
-  priceInCents  Int
-  maxUsers      Int
-  //   stripeProductId String
-  subscriptions Subscription[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id              String         @id @default(uuid())
+  name            String         @unique
+  priceInCents    Int
+  maxUsers        Int
+  stripePriceId   String?        @unique
+  subscriptions   Subscription[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model Subscription {
-  id        String             @id @default(uuid())
-  tenant    Tenant             @relation(fields: [tenantId], references: [id])
-  tenantId  String             @unique
-  plan      Plan               @relation(fields: [planId], references: [id])
-  planId    String
-  //   stripeSubId String             @unique
-  status    SubscriptionStatus
-  startDate DateTime
-  endDate   DateTime?
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id          String             @id @default(uuid())
+  tenant      Tenant             @relation(fields: [tenantId], references: [id])
+  tenantId    String             @unique
+  plan        Plan               @relation(fields: [planId], references: [id])
+  planId      String
+  stripeSubId String?            @unique
+  status      SubscriptionStatus
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 }
