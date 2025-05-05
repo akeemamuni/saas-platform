@@ -1,6 +1,8 @@
+import * as dotenv from 'dotenv'
 import { PrismaClient, RoleType, SubscriptionStatus } from '@prisma/client';
 import { hash } from 'bcrypt';
 
+dotenv.config();
 const prisma = new PrismaClient();
 
 async function main() {
@@ -27,7 +29,7 @@ async function main() {
     console.log('✅ Roles seeded');
 
     // 2. Create Plans
-    const [basicPlan, proPlan, entPlan] = await Promise.all([
+    const [basicPlan, _p, _g] = await Promise.all([
         prisma.plan.create({
             data: {
                 name: 'Basic',
@@ -39,78 +41,170 @@ async function main() {
             data: {
                 name: 'Pro',
                 priceInCents: 19900,
-                maxUsers: 20,
+                maxUsers: 12,
+                stripePriceId: process.env.PRO_PRICE_ID
             },
         }),
         prisma.plan.create({
             data: {
                 name: 'Gold',
                 priceInCents: 29900,
-                maxUsers: 75,
+                maxUsers: 20,
+                stripePriceId: process.env.GOLD_PRICE_ID
             },
         }),
     ]);
     console.log('✅ Plans seeded');
 
     // 3. Create Tenant
-    const tenant = await prisma.tenant.create({
-        data: {
-            name: 'Acme Corp',
-        },
+    await prisma.tenant.createMany({
+        data: [
+            {
+                name: 'Acme Corp',
+            },
+            {
+                name: 'Agro Ltd',
+            },
+            {
+                name: 'Indiq Ent',
+            },
+            {
+                name: 'Jand Realty',
+            },
+            {
+                name: 'Electrified Inc',
+            }
+        ],
+        skipDuplicates: true
     });
-    console.log('✅ Tenant seeded');
+    console.log('✅ Tenants seeded');
 
-    // 4. Create User for the tenant (ADMIN)
-    const passwordHash = await hash('password123', 10);
-    const user = await prisma.user.create({
-        data: {
-            name: 'John Doe',
-            email: 'john@acme.com',
-            password: passwordHash,
-            tenantId: tenant.id,
-            roleId: adminRole.id,
-        },
+    // 4. Create Users for the tenants
+    const password = process.env.SEED_PASSWORD || 'Password';
+    const passwordHash = await hash(password, 10);
+    const tenants = await prisma.tenant.findMany();
+
+    const user = await prisma.user.createMany({
+        data: [
+            // First company
+            {
+                name: 'John Doe',
+                email: 'john.d@seed.com',
+                password: passwordHash,
+                tenantId: tenants[0].id,
+                roleId: adminRole.id,
+            },
+            {
+                name: 'Brian Thomas',
+                email: 'brian.t@seed.com',
+                password: passwordHash,
+                tenantId: tenants[0].id,
+                roleId: managerRole.id,
+            },
+            {
+                name: 'Karin James',
+                email: 'k.james@seed.com',
+                password: passwordHash,
+                tenantId: tenants[0].id,
+                roleId: memberRole.id,
+            },
+            {
+                name: 'Okoro Micheal',
+                email: 'okoro.m@seed.com',
+                password: passwordHash,
+                tenantId: tenants[0].id,
+                roleId: memberRole.id,
+            },
+            // Second company
+            {
+                name: 'Thomas Andrej',
+                email: 'thomas@seed.com',
+                password: passwordHash,
+                tenantId: tenants[1].id,
+                roleId: adminRole.id,
+            },
+            {
+                name: 'Sara Clarence',
+                email: 'sc@seed.com',
+                password: passwordHash,
+                tenantId: tenants[1].id,
+                roleId: managerRole.id,
+            },
+            // Third company
+            {
+                name: 'Julius Adamson',
+                email: 'j.adamson@seed.com',
+                password: passwordHash,
+                tenantId: tenants[2].id,
+                roleId: adminRole.id,
+            },
+            // Fourth company
+            {
+                name: 'Chris Adekunle',
+                email: 'chris.a@seed.com',
+                password: passwordHash,
+                tenantId: tenants[3].id,
+                roleId: adminRole.id,
+            },
+            // Fifth company
+            {
+                name: 'Ned Kwaku',
+                email: 'n.kwaku@seed.com',
+                password: passwordHash,
+                tenantId: tenants[4].id,
+                roleId: adminRole.id,
+            },
+        ]
     });
-    console.log('✅ User seeded');
+    console.log('✅ Users seeded');
 
     // 5. Create Subscription for the tenant
-    await prisma.subscription.create({
-        data: {
-            tenantId: tenant.id,
-            planId: basicPlan.id,
-            status: SubscriptionStatus.ACTIVE,
-            startDate: new Date(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
-            // trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7-day trial
-        },
-    });
-    console.log('✅ Subscription seeded');
-}
-
-async function addNewPlan() {
-    console.log('Try to add a new plan...');
-    try {
-        await prisma.plan.create({
-            data: {
-                name: 'Gold',
-                priceInCents: 29900,
-                maxUsers: 75,
+    await prisma.subscription.createMany({
+        data: [
+            {
+                tenantId: tenants[1].id,
+                planId: basicPlan.id,
+                status: SubscriptionStatus.ACTIVE,
+                startDate: new Date(),
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+                // trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7-day trial
             },
-        });
-        console.log('✅ Plan added successfully..')
-    } catch (error) {
-        console.error(error)
-    }
+            {
+                tenantId: tenants[2].id,
+                planId: basicPlan.id,
+                status: SubscriptionStatus.ACTIVE,
+                startDate: new Date(),
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+            }
+        ]
+    });
+    console.log('✅ Subscriptions seeded');
 }
 
-// main()
-//     .then(() => {
-//         console.log('🌱 Seeding complete');
-//         return prisma.$disconnect();
-//     })
-//     .catch((e) => {
-//         console.error(e);
-//         process.exit(1);
-//     });
+// async function addNewPlan() {
+//     console.log('Try to add a new plan...');
+//     try {
+//         await prisma.plan.create({
+//             data: {
+//                 name: 'Gold',
+//                 priceInCents: 29900,
+//                 maxUsers: 75,
+//             },
+//         });
+//         console.log('✅ Plan added successfully..')
+//     } catch (error) {
+//         console.error(error)
+//     }
+// }
 
-addNewPlan();
+main()
+    .then(() => {
+        console.log('🌱 Seeding complete');
+        return prisma.$disconnect();
+    })
+    .catch((e) => {
+        console.error(e);
+        process.exit(1);
+    });
+
+// addNewPlan();
