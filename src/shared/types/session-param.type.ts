@@ -1,8 +1,6 @@
 export type SessionParams = {
-    plan: string;
-    planId: string;
+    stripePriceId: string | undefined;
     tenantId: string;
-    priceInCents: number;
     successUrl: string;
     cancelUrl: string;
 }
