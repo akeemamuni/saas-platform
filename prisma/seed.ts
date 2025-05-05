@@ -154,7 +154,8 @@ async function main() {
                 tenantId: tenants[4].id,
                 roleId: adminRole.id,
             },
-        ]
+        ],
+        skipDuplicates: true
     });
     console.log('✅ Users seeded');
 
@@ -162,12 +163,18 @@ async function main() {
     await prisma.subscription.createMany({
         data: [
             {
+                tenantId: tenants[0].id,
+                planId: basicPlan.id,
+                status: SubscriptionStatus.ACTIVE,
+                startDate: new Date(),
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
+            },
+            {
                 tenantId: tenants[1].id,
                 planId: basicPlan.id,
                 status: SubscriptionStatus.ACTIVE,
                 startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
-                // trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7-day trial
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
             },
             {
                 tenantId: tenants[2].id,
@@ -175,8 +182,24 @@ async function main() {
                 status: SubscriptionStatus.ACTIVE,
                 startDate: new Date(),
                 endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+            },
+            {
+                tenantId: tenants[3].id,
+                planId: basicPlan.id,
+                status: SubscriptionStatus.ACTIVE,
+                startDate: new Date(),
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
+            },
+            {
+                tenantId: tenants[4].id,
+                planId: basicPlan.id,
+                status: SubscriptionStatus.ACTIVE,
+                startDate: new Date(),
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
+                // trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7-day trial
             }
-        ]
+        ],
+        skipDuplicates: true
     });
     console.log('✅ Subscriptions seeded');
 }
