@@ -19,10 +19,6 @@ export class CreateUserDto {
     @IsNotEmpty()
     password: string;
 
-    @IsUUID()
-    @IsNotEmpty()
-    tenantId: string;
-
     @IsEnum(RoleType, {message: 'Please select a valid role: ADMIN | MANAGER | MEMBER..'})
     role: RoleType;
 }
