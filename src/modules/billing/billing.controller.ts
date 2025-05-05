@@ -11,10 +11,10 @@ import { JwtPayload } from 'src/shared/types/payload.type';
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
-  @Get(':id')
+  @Get('checkout/:planId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.ADMIN)
-  create(@AuthUser() authUser: JwtPayload, @Param('id') planId: string) {
+  create(@AuthUser() authUser: JwtPayload, @Param('planId') planId: string) {
     return this.billingService.createCheckoutSession(authUser, planId);
   }
 }

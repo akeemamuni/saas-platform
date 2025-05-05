@@ -30,13 +30,13 @@ export class BillingService {
         if (!plan) throw new NotFoundException('Plan not found...');
 
         // Construct session param data
+        const successUrl = this.configService.get<string>('SUCCESS_URL') || 'https://stripe.com';
+        const cancelUrl = this.configService.get<string>('CANCEL_URL') || 'https://stripe.com';
         const data: SessionParams = {
-            plan: plan.name,
-            planId: plan.id,
+            stripePriceId: plan.stripePriceId || undefined,
             tenantId: user.tenantId,
-            priceInCents: plan.priceInCents,
-            successUrl: 'https://stripe.com',
-            cancelUrl: 'https://stripe.com'
+            successUrl: successUrl,
+            cancelUrl: cancelUrl
         }
 
         // Stipe checkout session
@@ -44,20 +44,15 @@ export class BillingService {
             payment_method_types: ['card', 'paypal'],
             success_url: data.successUrl,
             cancel_url: data.cancelUrl,
+            customer_email: user.email,
             mode: 'subscription',
-            metadata: {
-                tenantId: data.tenantId,
-                planId: data.planId
-            },
             line_items: [{
-                price_data: {
-                    currency: 'usd',
-                    unit_amount: data.priceInCents,
-                    recurring: { interval: 'month' },
-                    product_data: { name: data.plan }
-                },
+                price: data.stripePriceId,
                 quantity: 1
-            }]
+            }],
+            metadata: {
+                tenantId: data.tenantId
+            },
         });
         return { url: session.url };
     }
