@@ -166,36 +166,32 @@ async function main() {
                 tenantId: tenants[0].id,
                 planId: basicPlan.id,
                 status: SubscriptionStatus.ACTIVE,
-                startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
+                startDate: new Date()
             },
             {
                 tenantId: tenants[1].id,
                 planId: basicPlan.id,
                 status: SubscriptionStatus.ACTIVE,
-                startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
+                startDate: new Date()
             },
             {
                 tenantId: tenants[2].id,
                 planId: basicPlan.id,
                 status: SubscriptionStatus.ACTIVE,
-                startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+                startDate: new Date()
             },
             {
                 tenantId: tenants[3].id,
                 planId: basicPlan.id,
                 status: SubscriptionStatus.ACTIVE,
-                startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
+                startDate: new Date()
             },
             {
                 tenantId: tenants[4].id,
                 planId: basicPlan.id,
                 status: SubscriptionStatus.ACTIVE,
                 startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 30))
+                // endDate: new Date(new Date().setDate(new Date().getDate() + 30))
                 // trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7-day trial
             }
         ],
