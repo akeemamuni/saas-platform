@@ -4,7 +4,10 @@ import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { SessionParams } from 'src/shared/types/session-param.type';
 import Stripe from 'stripe';
 import { JwtPayload } from 'src/shared/types/payload.type';
-import { SubscriptionStatus } from '@prisma/client';
+import { updateTenantSub } from './webhooks/completed.webhook';
+import { renewTenantSub } from './webhooks/renewal.webhook';
+import { failedSub } from './webhooks/failed.webhook';
+import { subCanelling } from './webhooks/cancelled.webhook';
 
 @Injectable()
 export class BillingService {
@@ -76,65 +79,32 @@ export class BillingService {
         switch (event.type) {
             // Successfull payment/sub
             case 'checkout.session.completed': {
-                const session = event.data.object as Stripe.Checkout.Session;
-                const planId = session.metadata?.planId;
-                const tenantId = session.metadata?.tenantId;
-                const subscriptionId = session.subscription as string;
+                await updateTenantSub(event, this.prisma);
+                break;
+            }
 
-                if (!planId || !tenantId || !subscriptionId) {
-                    console.warn('Missing planId, tenantId and/or subscriptionId...');
-                    break;
-                }
-
-                // Update subscription
-                await this.prisma.subscription.update({
-                    where: { tenantId },
-                    data: {
-                        planId,
-                        tenantId,
-                        stripeSubId: subscriptionId,
-                        status: SubscriptionStatus.ACTIVE,
-                        startDate: new Date(),
-                        endDate: new Date(new Date().setDate(new Date().getDate() + 30))
-                    }
-                });
-                // Send notification...
+            // Successful renewal
+            case 'invoice.paid': {
+                await renewTenantSub(event, this.prisma);
                 break;
             }
 
             // Unsuccessful payment/sub
             case 'invoice.payment_failed': {
-                const invoice = event.data.object as Stripe.Invoice;
-                const tenantId = invoice.metadata?.tenantId;
+                await failedSub(event, this.prisma);
+                break;
+            }
 
-                // Get all plans to use in checking current plan
-                const [proPlan, goldPlan] = await Promise.all([
-                    this.prisma.plan.findUnique({
-                        where: { name: 'Pro' }
-                    }),
-                    this.prisma.plan.findUnique({
-                        where: { name: 'Gold' }
-                    })
-                ]);
+            // Subscription changes (upgrades and downgrades)
+            case 'customer.subscription.updated': {
+                const subscription = event.data.object as Stripe.Subscription;
+                console.log(`Subscription ${subscription.id} was updated...`);
+                break;
+            }
 
-                const tenant = await this.prisma.tenant.findFirst({
-                    where: { id: tenantId },
-                    include: { subscription: true },
-                });
-
-                if (tenant) {
-                    const currSub = tenant.subscription;
-                    // When paid plans fails
-                    if (currSub?.planId === proPlan?.id || currSub?.planId === goldPlan?.id) {
-                        await this.prisma.subscription.update({
-                            where: { tenantId: tenant.id },
-                            data: {
-                                status: SubscriptionStatus.EXPIRED
-                            }
-                        });
-                    }
-                    // Send notification
-                }
+            // Subscription cancelled
+            case 'customer.subscription.deleted': {
+                await subCanelling(event, this.prisma);
                 break;
             }
 
