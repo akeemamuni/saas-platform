@@ -23,5 +23,6 @@ export async function updateTenantSub(event: Stripe.Event, prisma: PrismaService
             endDate: new Date(new Date().setDate(new Date().getDate() + 30))
         }
     });
-    // Send notification...
+    // Send notification and log...
+    console.log(`Tenant ${tenantId} just a new subscription...`);
 }
