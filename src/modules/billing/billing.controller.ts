@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Post, Req } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Post, Req, Header } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
@@ -20,7 +20,9 @@ export class BillingController {
     }
 
     @Post('webhook')
+    @Header('Content-Type', 'application/json')
     stripeWebhook(@RequestRawBody() rawBody: Buffer, @Req() req: Request) {
+        console.log('Received webhook:', req.body);
         return this.billingService.handleWebhook(req, rawBody);
     }
 }
