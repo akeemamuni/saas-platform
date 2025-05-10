@@ -66,12 +66,16 @@ export class BillingService {
         // Verify signature and webhoo
         const sig = req.headers['stripe-signature'] as string;
         const webhookSecret = this.configService.get<string>('WEBHOOK_SECRET');
-        if (!webhookSecret) throw new BadRequestException('No webhook secret...');
+        if (!webhookSecret) {
+            console.log('No webhook secret...');
+            throw new BadRequestException('No webhook secret...');
+        }
 
         let event: Stripe.Event;
         try {
             event = this.stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
         } catch (err) {
+            console.log(`Webhook error: ${err.message}`);
             throw new BadRequestException(`Webhook error: ${err.message}`);
         }
 
