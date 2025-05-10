@@ -20,9 +20,9 @@ export class BillingController {
     }
 
     @Post('webhook')
-    @Header('Content-Type', 'application/json')
+    // @Header('Content-Type', 'application/json')
     stripeWebhook(@RequestRawBody() rawBody: Buffer, @Req() req: Request) {
-        console.log('Received webhook:', req.body);
+        // console.log('Received webhook:', req.body);
         return this.billingService.handleWebhook(req, rawBody);
     }
 }
