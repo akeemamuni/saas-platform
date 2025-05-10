@@ -3,6 +3,9 @@ import { RoleDTO } from "src/modules/auth/dto/jwt-payload.dto";
 import { ValidateNested } from "class-validator";
 
 export class FindUserResDto {
+    @Expose()
+    total: number;
+
     @Exclude()
     password: string;
 

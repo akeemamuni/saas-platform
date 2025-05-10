@@ -74,8 +74,9 @@ export class UserService {
             where: { tenantId: user.tenantId },
             include: { role: true }
         });
+        const total = tenantUsers.length;
         return plainToInstance(
-            FindUserResDto, tenantUsers,
+            FindUserResDto, [...tenantUsers, { total }],
             {
                 excludeExtraneousValues: true
             }
