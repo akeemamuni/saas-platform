@@ -76,7 +76,7 @@ export class UserService {
         });
         const total = tenantUsers.length;
         return plainToInstance(
-            FindUserResDto, [...tenantUsers, { total }],
+            FindUserResDto, [{ total }, ...tenantUsers],
             {
                 excludeExtraneousValues: true
             }
