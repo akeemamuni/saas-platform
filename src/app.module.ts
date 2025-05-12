@@ -10,6 +10,8 @@ import { PlanModule } from './modules/plan/plan.module';
 import { RoleModule } from './modules/role/role.module';
 import { UserModule } from './modules/user/user.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { RedisModule } from './shared/redis/redis.module';
+import { JobModule } from './shared/job/job.module';
 
 @Module({
   imports: [
@@ -24,7 +26,9 @@ import { BillingModule } from './modules/billing/billing.module';
     PlanModule,
     RoleModule,
     UserModule,
-    BillingModule
+    BillingModule,
+    RedisModule,
+    JobModule
   ],
   controllers: [AppController],
   providers: [AppService],
