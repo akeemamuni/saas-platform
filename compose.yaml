@@ -1,14 +1,14 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: saas_postgres
-    restart: always
-    env_file:
-      - C:\Repositories\public\saas-platform\.env
-    ports:
-      - '5432:5432'
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+  # postgres:
+  #   image: postgres:16
+  #   container_name: saas_postgres
+  #   restart: always
+  #   env_file:
+  #     - C:\Repositories\public\saas-platform\.env
+  #   ports:
+  #     - '5432:5432'
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7
@@ -17,5 +17,5 @@ services:
     ports:
       - '6379:6379'
 
-volumes:
-  pgdata:
+# volumes:
+#   pgdata:
