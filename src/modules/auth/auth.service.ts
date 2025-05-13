@@ -10,11 +10,13 @@ import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ResponseDTO } from './dto/response.dto';
 import { JwtPayload } from 'src/shared/types/payload.type';
 import { JwtPayloadDTO } from './dto/jwt-payload.dto';
+import { JobQueueService } from 'src/shared/job/job-queue.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly configService: ConfigService,
+        private readonly jqService: JobQueueService,
         private readonly prisma: PrismaService,
         private readonly jwt: JwtService
     ) {}
@@ -57,7 +59,7 @@ export class AuthService {
         const hashedPassword = await hashValue(password);
 
         try {
-            const transactionResult = await this.prisma.$transaction(
+            const txResult = await this.prisma.$transaction(
                 async (tx) => {
                     // Create new tenant (company)
                     const newTenant = await tx.tenant.create({
@@ -96,8 +98,16 @@ export class AuthService {
                     return adminUser;
                 }
             );
+
+            // BG job for welcome email
+            await this.jqService.welcomeEmailJob({
+                email: txResult.email,
+                name: txResult.name
+            });
+            
+            // Return payload
             return plainToInstance(
-                ResponseDTO, transactionResult, { excludeExtraneousValues: true }
+                ResponseDTO, txResult, { excludeExtraneousValues: true }
             );
 
         } catch (error) {
