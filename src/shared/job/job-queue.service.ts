@@ -25,4 +25,14 @@ export class JobQueueService {
     async passwordResetEmailJob(email: string) {
         await this.emailQueue.add('password-reset-email', email);
     }
+
+    // Add stripe subscription success
+    async stripePaymentSuccessJob(tenantId: string) {
+        await this.emailQueue.add('stripe-payment-success', tenantId);
+    }
+
+    // Add stripe subscription cancelled
+    async stripePaymentCancelledJob(data: {tenantId: string, subId: string | null}) {
+        await this.emailQueue.add('stripe-payment-cancelled', data);
+    }
 }
