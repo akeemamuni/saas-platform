@@ -8,6 +8,7 @@ import { updateTenantSub } from './webhooks/completed.webhook';
 import { renewTenantSub } from './webhooks/renewal.webhook';
 import { failedSub } from './webhooks/failed.webhook';
 import { subCanelling } from './webhooks/cancelled.webhook';
+import { JobQueueService } from 'src/shared/job/job-queue.service';
 
 @Injectable()
 export class BillingService {
@@ -16,6 +17,7 @@ export class BillingService {
 
     constructor(
         private readonly configService: ConfigService,
+        private readonly jqService: JobQueueService,
         private readonly prisma: PrismaService
     ) {
         this.apiKey = this.configService.get('STRIPE_SK');
@@ -83,7 +85,7 @@ export class BillingService {
         switch (event.type) {
             // Successfull payment/sub
             case 'checkout.session.completed': {
-                await updateTenantSub(event, this.prisma);
+                await updateTenantSub(event, this.prisma, this.jqService);
                 break;
             }
 
@@ -108,7 +110,7 @@ export class BillingService {
 
             // Subscription cancelled
             case 'customer.subscription.deleted': {
-                await subCanelling(event, this.prisma);
+                await subCanelling(event, this.prisma, this.jqService);
                 break;
             }
 
