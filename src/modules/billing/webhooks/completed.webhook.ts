@@ -1,9 +1,14 @@
 import Stripe from 'stripe';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { SubscriptionStatus } from '@prisma/client';
+import { JobQueueService } from 'src/shared/job/job-queue.service';
 
 // Handle subscription
-export async function updateTenantSub(event: Stripe.Event, prisma: PrismaService): Promise<void> {
+export async function updateTenantSub(
+    event: Stripe.Event, 
+    prisma: PrismaService,
+    jqService: JobQueueService
+): Promise<void> {
     const session = event.data.object as Stripe.Checkout.Session;
     const planId = session.metadata?.planId;
     const tenantId = session.metadata?.tenantId;
@@ -24,5 +29,6 @@ export async function updateTenantSub(event: Stripe.Event, prisma: PrismaService
         }
     });
     // Send notification and log...
-    console.log(`Tenant ${tenantId} just a new subscription...`);
+    // console.log(`Tenant ${tenantId} just a new subscription...`);
+    jqService.stripePaymentSuccessJob(tenantId);
 }
