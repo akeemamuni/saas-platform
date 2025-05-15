@@ -44,7 +44,9 @@ export class EmailProcessor {
         });
 
         this.worker.on('failed', (job, err) => {
-            console.error(`Job ${job?.name} failed:`, err);
+            console.error(
+                `${job?.name} failed after ${job?.attemptsMade}/${job?.opts.attempts}:`, err
+            );
         });
     }
 
