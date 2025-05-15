@@ -11,16 +11,16 @@ import basicAuth from 'express-basic-auth';
 @Module({imports: [JobModule]})
 export class BullBoardModule implements OnModuleInit {
     private readonly queueDashboard = express();
+    private port: string | undefined;
+    private password: string;
 
     constructor(
         private readonly jqService: JobQueueService,
         private readonly config: ConfigService,
-        private password: string,
-        private port: string | undefined
     ) {
         this.port = this.config.get<string>('EXP_PORT');
         this.password = this.config.get<string>('EXP_PASSWORD') as string;
-        if (!port || !password) throw new Error('Queue dashboard credentials not found...');
+        if (!this.port || !this.password) throw new Error('Queue dashboard credentials not found...');
     }
 
     onModuleInit() {
