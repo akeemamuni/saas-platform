@@ -8,7 +8,6 @@ import { JobQueueService } from '../job/job-queue.service';
 import express from 'express';
 import basicAuth from 'express-basic-auth';
 
-@Injectable()
 @Module({imports: [JobModule]})
 export class BullBoardModule implements OnModuleInit {
     private readonly queueDashboard = express();
