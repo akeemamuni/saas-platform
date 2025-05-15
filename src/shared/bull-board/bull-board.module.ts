@@ -15,7 +15,7 @@ export class BullBoardModule implements OnModuleInit {
     constructor(
         private readonly jqService: JobQueueService,
         private readonly config: ConfigService,
-        private readonly password: string,
+        private password: string,
         private port: string | undefined
     ) {
         this.port = this.config.get<string>('EXP_PORT');
