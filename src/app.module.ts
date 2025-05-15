@@ -12,6 +12,7 @@ import { UserModule } from './modules/user/user.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { RedisModule } from './shared/redis/redis.module';
 import { JobModule } from './shared/job/job.module';
+import { BullBoardModule } from './shared/bull-board/bull-board.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { JobModule } from './shared/job/job.module';
     UserModule,
     BillingModule,
     RedisModule,
-    JobModule
+    JobModule,
+    BullBoardModule
   ],
   controllers: [AppController],
   providers: [AppService],
