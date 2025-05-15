@@ -1,13 +1,15 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Injectable, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { JobModule } from '../job/job.module';
 import { JobQueueService } from '../job/job-queue.service';
 import express from 'express';
 import basicAuth from 'express-basic-auth';
 
-@Module({})
+@Injectable()
+@Module({imports: [JobModule]})
 export class BullBoardModule implements OnModuleInit {
     private readonly queueDashboard = express();
 
