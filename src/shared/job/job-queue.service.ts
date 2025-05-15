@@ -16,23 +16,40 @@ export class JobQueueService {
         });
     }
 
+    // Getter
+    getEmailQueue() {
+        return this.emailQueue;
+    }
+    
     // Add welcome email job to queue
     async welcomeEmailJob(data: { email: string; name: string }) {
-        await this.emailQueue.add('send-welcome-email', data);
+        await this.emailQueue.add('send-welcome-email', data, {
+            backoff: { type: 'exponential', delay: 3000 },
+            attempts: 3
+        });
     }
 
     // Add password reset to queue
     async passwordResetEmailJob(email: string) {
-        await this.emailQueue.add('password-reset-email', email);
+        await this.emailQueue.add('password-reset-email', email, {
+            backoff: { type: 'exponential', delay: 3000 },
+            attempts: 3
+        });
     }
 
     // Add stripe subscription success
     async stripePaymentSuccessJob(tenantId: string) {
-        await this.emailQueue.add('stripe-payment-success', tenantId);
+        await this.emailQueue.add('stripe-payment-success', tenantId, {
+            backoff: { type: 'exponential', delay: 3000 },
+            attempts: 3
+        });
     }
 
     // Add stripe subscription cancelled
     async stripePaymentCancelledJob(data: {tenantId: string, subId: string | null}) {
-        await this.emailQueue.add('stripe-payment-cancelled', data);
+        await this.emailQueue.add('stripe-payment-cancelled', data, {
+            backoff: { type: 'exponential', delay: 3000 },
+            attempts: 3
+        });
     }
 }
