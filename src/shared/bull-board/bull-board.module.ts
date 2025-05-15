@@ -5,8 +5,8 @@ import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { JobModule } from '../job/job.module';
 import { JobQueueService } from '../job/job-queue.service';
-import express from 'express';
-import basicAuth from 'express-basic-auth';
+import * as express from 'express';
+import * as basicAuth from 'express-basic-auth';
 
 @Module({imports: [JobModule]})
 export class BullBoardModule implements OnModuleInit {
