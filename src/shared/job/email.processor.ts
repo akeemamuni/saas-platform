@@ -5,6 +5,7 @@ import { welcomeEmail } from "./jobs/welcome-email.job";
 import { passwordResetEmail } from "./jobs/password-reset.job";
 import { stripePaymentSuccess } from "./jobs/stripe-success.job";
 import { stripePaymentCancelled } from "./jobs/stripe-cancelled.job";
+import { MailerService } from "../mailer/mailer.service";
 
 @Injectable()
 export class EmailProcessor {
@@ -12,7 +13,10 @@ export class EmailProcessor {
     private readonly redisHost: string;
     private readonly redisPort: number;
 
-    constructor(private readonly config: ConfigService) {
+    constructor(
+        private readonly config: ConfigService,
+        private readonly mailer: MailerService
+    ) {
         this.redisHost = this.config.get('REDIS_HOST') as string;
         this.redisPort = Number(this.config.get('REDIS_PORT'));
 
@@ -24,8 +28,8 @@ export class EmailProcessor {
     // Job processor
     async handleJob(job: Job) {
         switch(job.name) {
-            case 'send-welcome-email': return welcomeEmail(job.data);
-            case 'password-reset-email': return passwordResetEmail(job.data);
+            case 'send-welcome-email': return welcomeEmail(job.data, this.mailer);
+            case 'password-reset-email': return passwordResetEmail(job.data, this.mailer);
             case 'stripe-payment-success': return stripePaymentSuccess(job.data);
             case 'stripe-payment-cancelled': return stripePaymentCancelled(job.data);
             default: console.log(`Unhandled job: ${job.name}`);
