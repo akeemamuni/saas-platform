@@ -13,6 +13,7 @@ import { BillingModule } from './modules/billing/billing.module';
 import { RedisModule } from './shared/redis/redis.module';
 import { JobModule } from './shared/job/job.module';
 import { BullBoardModule } from './shared/bull-board/bull-board.module';
+import { MailerModule } from './shared/mailer/mailer.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { BullBoardModule } from './shared/bull-board/bull-board.module';
     BillingModule,
     RedisModule,
     JobModule,
-    BullBoardModule
+    BullBoardModule,
+    MailerModule
   ],
   controllers: [AppController],
   providers: [AppService],
