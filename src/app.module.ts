@@ -10,7 +10,7 @@ import { PlanModule } from './modules/plan/plan.module';
 import { RoleModule } from './modules/role/role.module';
 import { UserModule } from './modules/user/user.module';
 import { BillingModule } from './modules/billing/billing.module';
-import { RedisModule } from './shared/redis/redis.module';
+// import { RedisModule } from './shared/redis/redis.module';
 import { JobModule } from './shared/job/job.module';
 import { BullBoardModule } from './shared/bull-board/bull-board.module';
 import { MailerModule } from './shared/mailer/mailer.module';
@@ -29,7 +29,7 @@ import { MailerModule } from './shared/mailer/mailer.module';
     RoleModule,
     UserModule,
     BillingModule,
-    RedisModule,
+    // RedisModule,
     JobModule,
     BullBoardModule,
     MailerModule
