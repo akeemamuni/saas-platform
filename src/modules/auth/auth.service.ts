@@ -42,7 +42,9 @@ export class AuthService {
 
         // Hash and store refresh token
         const hashedToken = await hashValue(refreshToken);
+        console.log(`Setting hash: ${hashedToken}`);
         await this.cache.setData(plainPayloadObj.id, hashedToken);
+        console.log(`Setting hash complete: ${hashedToken}`);
         // await this.prisma.user.update({
         //     where: {id: plainPayloadObj.id},
         //     data: { hashedToken }
