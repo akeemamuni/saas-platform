@@ -42,9 +42,8 @@ export class AuthService {
 
         // Hash and store refresh token
         const hashedToken = await hashValue(refreshToken);
-        console.log(`Setting hash: ${hashedToken}`);
         await this.cache.setData(plainPayloadObj.id, hashedToken);
-        console.log(`Setting hash complete: ${hashedToken}`);
+
         // await this.prisma.user.update({
         //     where: {id: plainPayloadObj.id},
         //     data: { hashedToken }
@@ -145,21 +144,21 @@ export class AuthService {
             const payload = await this.jwt.verifyToken(refreshToken, true);
 
             // Find user and verify if user has hashed token
-            const hashedToken = await this.cache.getData(payload.id);
-            if (!hashedToken) throw new UnauthorizedException('Access denied...');
-
             // const user = await this.prisma.user.findUnique({
             //     where: { email: payload.email }
             // });
             // if (!user || !user.hashedToken) throw new Error('Access denied..');
 
+            const hashedToken = await this.cache.getData<string>(payload.id);
+            if (!hashedToken) throw new UnauthorizedException('Access denied...');
+
             // Verify if both tokens 
-            console.log(hashedToken);
-            // const verify = await verifyValue(refreshToken, hashedToken);
-            // if (!verify) throw new Error('Access denied...');
+            console.log(`This was hashed and stored on redis: ${hashedToken}`);
+            const verify = await verifyValue(refreshToken, hashedToken);
+            if (!verify) throw new Error('Access denied...');
 
             // // Generate and return set of tokens
-            // return await this.genAccessAndRefreshToken(payload);
+            return await this.genAccessAndRefreshToken(payload);
 
         } catch (error) {
             // throw new Error('Invalid credentials...');
