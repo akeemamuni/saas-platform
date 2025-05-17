@@ -11,13 +11,9 @@ export class JobQueueService {
         const redisHost = this.config.get<string>('REDIS_HOST');
         const redisPort = this.config.get<string>('REDIS_PORT');
         if (!redisHost || !redisPort) throw new Error('Redis URL not defined...');
-        try {
-            this.emailQueue = new Queue('email', {
-                connection: { host: redisHost, port: parseInt(redisPort) }
-            });
-        } catch (error) {
-            throw new Error('Unable to create queue', error);
-        }
+        this.emailQueue = new Queue('email', {
+            connection: { host: redisHost, port: parseInt(redisPort) }
+        });
     }
 
     // Getter
