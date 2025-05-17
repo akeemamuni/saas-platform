@@ -42,7 +42,7 @@ export class AuthService {
 
         // Hash and store refresh token
         const hashedToken = await hashValue(refreshToken);
-        await this.cache.setData(plainPayloadObj.id, hashedToken);
+        await this.cache.setHashedToken(plainPayloadObj.id, hashedToken);
 
         // await this.prisma.user.update({
         //     where: {id: plainPayloadObj.id},
@@ -149,10 +149,10 @@ export class AuthService {
             // });
             // if (!user || !user.hashedToken) throw new Error('Access denied..');
 
-            const hashedToken = await this.cache.getData<string>(payload.id);
+            const hashedToken = await this.cache.getHashedToken(payload.id);
             if (!hashedToken) throw new UnauthorizedException('Access denied...');
 
-            // Verify if both tokens 
+            // Verify if both tokens match
             console.log(`This was hashed and stored on redis: ${hashedToken}`);
             const verify = await verifyValue(refreshToken, hashedToken);
             if (!verify) throw new Error('Access denied...');
