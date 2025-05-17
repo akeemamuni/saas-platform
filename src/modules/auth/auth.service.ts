@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { RegisterDTO } from './dto/register.dto';
@@ -11,6 +11,7 @@ import { ResponseDTO } from './dto/response.dto';
 import { JwtPayload } from 'src/shared/types/payload.type';
 import { JwtPayloadDTO } from './dto/jwt-payload.dto';
 import { JobQueueService } from 'src/shared/job/job-queue.service';
+import { CacheService } from 'src/shared/cache/cache.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
         private readonly configService: ConfigService,
         private readonly jqService: JobQueueService,
         private readonly prisma: PrismaService,
+        private readonly cache: CacheService,
         private readonly jwt: JwtService
     ) {}
 
@@ -40,10 +42,11 @@ export class AuthService {
 
         // Hash and store refresh token
         const hashedToken = await hashValue(refreshToken);
-        await this.prisma.user.update({
-            where: {id: plainPayloadObj.id},
-            data: { hashedToken }
-        });
+        await this.cache.setData(plainPayloadObj.id, hashedToken);
+        // await this.prisma.user.update({
+        //     where: {id: plainPayloadObj.id},
+        //     data: { hashedToken }
+        // });
 
         return { accessToken, refreshToken };
     }
@@ -140,17 +143,21 @@ export class AuthService {
             const payload = await this.jwt.verifyToken(refreshToken, true);
 
             // Find user and verify if user has hashed token
-            const user = await this.prisma.user.findUnique({
-                where: { email: payload.email }
-            });
-            if (!user || !user.hashedToken) throw new Error('Access denied..');
+            const hashedToken = await this.cache.getData(payload.id);
+            if (!hashedToken) throw new UnauthorizedException('Access denied...');
 
-            // Verify if both tokens match
-            const verify = await verifyValue(refreshToken, user.hashedToken);
-            if (!verify) throw new Error('Access denied...');
+            // const user = await this.prisma.user.findUnique({
+            //     where: { email: payload.email }
+            // });
+            // if (!user || !user.hashedToken) throw new Error('Access denied..');
 
-            // Generate and return set of tokens
-            return await this.genAccessAndRefreshToken(payload);
+            // Verify if both tokens 
+            console.log(hashedToken);
+            // const verify = await verifyValue(refreshToken, hashedToken);
+            // if (!verify) throw new Error('Access denied...');
+
+            // // Generate and return set of tokens
+            // return await this.genAccessAndRefreshToken(payload);
 
         } catch (error) {
             // throw new Error('Invalid credentials...');
