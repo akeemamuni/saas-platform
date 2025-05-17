@@ -38,10 +38,14 @@ export class EmailProcessor {
 
     // Start worker and process jobs
     async start() {
-        this.worker = new Worker(
-            'email', async (job: Job) => this.handleJob(job),
-            {connection: {host: this.redisHost, port: this.redisPort}}
-        );
+        try {
+            this.worker = new Worker(
+                'email', async (job: Job) => this.handleJob(job),
+                {connection: {host: this.redisHost, port: this.redisPort}}
+            );
+        } catch (error) {
+            throw error;
+        }
 
         this.worker.on('completed', (job) => {
             console.log(`Job ${job.name} completed`);
