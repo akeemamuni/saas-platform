@@ -12,7 +12,7 @@ import redisStore from 'cache-manager-ioredis';
             useFactory: async (config: ConfigService) => ({
                 store: redisStore,
                 host: config.get<string>('REDIS_HOST'),
-                port: config.get<string>('REDIS_PORT'),
+                port: Number(config.get<string>('REDIS_PORT')),
                 ttl: 120000
             })
         })
