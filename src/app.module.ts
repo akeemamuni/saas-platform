@@ -14,6 +14,7 @@ import { BillingModule } from './modules/billing/billing.module';
 import { JobModule } from './shared/job/job.module';
 import { BullBoardModule } from './shared/bull-board/bull-board.module';
 import { MailerModule } from './shared/mailer/mailer.module';
+import { CacheModule } from './shared/cache/cache.module';
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { MailerModule } from './shared/mailer/mailer.module';
     // RedisModule,
     JobModule,
     BullBoardModule,
-    MailerModule
+    MailerModule,
+    CacheModule
   ],
   controllers: [AppController],
   providers: [AppService],
