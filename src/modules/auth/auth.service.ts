@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { RegisterDTO } from './dto/register.dto';
@@ -42,7 +42,7 @@ export class AuthService {
 
         // Hash and store refresh token
         const hashedToken = await hashValue(refreshToken);
-        await this.cache.setHashedToken(plainPayloadObj.id, hashedToken);
+        await this.cache.set(plainPayloadObj.id, hashedToken, 1000*60*60*24*7);
 
         // await this.prisma.user.update({
         //     where: {id: plainPayloadObj.id},
@@ -115,7 +115,7 @@ export class AuthService {
             );
 
         } catch (error) {
-            if (error.code === 'P2002') throw new Error('Invalid email..');
+            if (error.code === 'P2002') throw new BadRequestException('Invalid email..');
             throw error;
         }
     }
@@ -149,13 +149,12 @@ export class AuthService {
             // });
             // if (!user || !user.hashedToken) throw new Error('Access denied..');
 
-            const hashedToken = await this.cache.getHashedToken(payload.id);
-            if (!hashedToken) throw new UnauthorizedException('Access denied...');
+            const hashedToken = await this.cache.get<string>(payload.id);
+            if (!hashedToken) throw new UnauthorizedException('Access denied, please login...');
 
             // Verify if both tokens match
-            console.log(`This was hashed and stored on redis: ${hashedToken}`);
             const verify = await verifyValue(refreshToken, hashedToken);
-            if (!verify) throw new Error('Access denied...');
+            if (!verify) throw new UnauthorizedException('Access denied, please login...');
 
             // // Generate and return set of tokens
             return await this.genAccessAndRefreshToken(payload);
