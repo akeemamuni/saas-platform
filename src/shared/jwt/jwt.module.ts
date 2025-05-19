@@ -10,7 +10,7 @@ import { JwtService } from './jwt.service';
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
                 secret: config.get<string>('SECRET'),
-                signOptions: { expiresIn: '10m' }
+                signOptions: { expiresIn: '5m' }
             })
         })
     ],

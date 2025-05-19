@@ -10,14 +10,14 @@ export class JwtService {
     ) {}
 
     genAccessToken(payload: {}) {
-        return this.jwt.signAsync(payload, { expiresIn: '1m' });
+        return this.jwt.signAsync(payload, { expiresIn: '10m' });
     }
 
     genRefreshToken(payload: {}) {
         return this.jwt.signAsync(
             payload, 
             {
-                expiresIn: '15m',
+                expiresIn: '7d',
                 secret: this.config.get<string>('REFRESH_SECRET')
             }
         );
