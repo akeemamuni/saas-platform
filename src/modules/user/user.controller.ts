@@ -7,6 +7,8 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { AuthUser } from 'src/shared/decorators/auth-user.decorator';
 import { RoleType } from '@prisma/client';
 import { JwtPayload } from 'src/shared/types/payload.type';
+import { plainToInstance } from 'class-transformer';
+import { FindUserResDto } from './dto/response.dto';
 
 @Controller('user')
 export class UserController {
@@ -22,7 +24,14 @@ export class UserController {
     @Get()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(RoleType.ADMIN)
-    findAll(@AuthUser() user: JwtPayload) {
-        return this.userService.getTenantUsers(user);
+    async findAll(@AuthUser() user: JwtPayload) {
+        const users = await this.userService.getTenantUsers(user);
+        const total = users.length;
+        return plainToInstance(
+            FindUserResDto, [{ total }, ...users],
+            {
+                excludeExtraneousValues: true
+            }
+        );
     }
 }

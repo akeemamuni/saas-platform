@@ -6,11 +6,14 @@ import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateUserResDto } from './dto/create-res.dto';
 import { hashValue } from 'src/shared/utils/hash.util';
-import { FindUserResDto } from './dto/response.dto';
+import { CacheService } from 'src/shared/cache/cache.service';
 
 @Injectable()
 export class UserService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly cache: CacheService
+    ) {}
 
     // Check and enforce tenant plan limit
     private async checkTenantLimit(user: JwtPayload) {
@@ -70,16 +73,16 @@ export class UserService {
             throw new ForbiddenException('Only ADMINS Allowed..');
         }
         // Fetch all users under tenant
+        const users = await this.cache.get<[]>(`tenant-${user.tenantId}`);
+        if (users) return users;
+
         const tenantUsers = await this.prisma.user.findMany({
             where: { tenantId: user.tenantId },
             include: { role: true }
         });
-        const total = tenantUsers.length;
-        return plainToInstance(
-            FindUserResDto, [{ total }, ...tenantUsers],
-            {
-                excludeExtraneousValues: true
-            }
-        );
+        if (tenantUsers) {
+            await this.cache.set(`tenant-${user.tenantId}`, tenantUsers, 1000*60*60*12);
+        }
+        return tenantUsers;
     }
 }
