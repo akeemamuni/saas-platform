@@ -1,17 +1,17 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from 'src/shared/prisma/prisma.service';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import { RegisterDTO } from './dto/register.dto';
 import { LoginDTO } from './dto/login.dto';
 import { hashValue, verifyValue } from '../../shared/utils/hash.util';
 import { SubscriptionStatus, RoleType } from '@prisma/client';
-import { JwtService } from 'src/shared/jwt/jwt.service';
+import { JwtService } from '../../shared/jwt/jwt.service';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ResponseDTO } from './dto/response.dto';
-import { JwtPayload } from 'src/shared/types/payload.type';
+import { JwtPayload } from '../../shared/types/payload.type';
 import { JwtPayloadDTO } from './dto/jwt-payload.dto';
-import { JobQueueService } from 'src/shared/job/job-queue.service';
-import { CacheService } from 'src/shared/cache/cache.service';
+import { JobQueueService } from '../../shared/job/job-queue.service';
+import { CacheService } from '../../shared/cache/cache.service';
 
 @Injectable()
 export class AuthService {
