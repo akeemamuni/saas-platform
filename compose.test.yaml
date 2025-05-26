@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: test_postgres
+    env_file:
+      - C:\Repositories\public\saas-platform\.env.test.local
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7
+    container_name: test_redis
+    ports:
+      - '6379:6379'
