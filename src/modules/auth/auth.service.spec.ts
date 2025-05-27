@@ -1,103 +1,85 @@
-import { Test } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth.module';
 import { AuthService } from './auth.service';
+import { LoginDTO } from './dto/login.dto';
 import { PlanType, RegisterDTO } from './dto/register.dto';
 import { PrismaModule } from 'src/shared/prisma/prisma.module';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { JwtModule } from 'src/shared/jwt/jwt.module';
 import { CacheModule } from 'src/shared/cache/cache.module';
 import { JobModule } from 'src/shared/job/job.module';
-import { RoleType } from '@prisma/client';
+import { JobQueueService } from 'src/shared/job/job-queue.service';
+import { resetTestDB, disconnectTestDB } from 'src/shared/utils/test-db.handler';
 
 describe('Authentication service (integration)', () => {
+    let module: TestingModule;
     let authService: AuthService;
+    let jqService: JobQueueService;
     let prisma: PrismaService;
+    let config: ConfigService;
 
     beforeAll(async () => {
-       const module = await Test.createTestingModule({
+        module = await Test.createTestingModule({
         imports: [
             ConfigModule.forRoot({
                 isGlobal: true,
                 envFilePath: '.env.test.local'
             }),
-            AuthModule,
-            PrismaModule,
-            JwtModule,
-            JobModule,
+            AuthModule, PrismaModule,
+            JwtModule, JobModule,
             CacheModule
         ]
        }).compile();
 
        authService = module.get(AuthService);
+       jqService = module.get(JobQueueService);
        prisma = module.get(PrismaService);
+       config = module.get(ConfigService);
     });
 
-    beforeEach(async () => {
-        // Clear tables
-        await prisma.$executeRawUnsafe(`TRUNCATE TABLE "User", "Tenant", "Role", "Plan", "Subscription" RESTART IDENTITY CASCADE`);
-        // Seed default role and plan
-        await Promise.all([
-            prisma.role.upsert({
-                where: { name: RoleType.ADMIN },
-                update: {},
-                create: { name: RoleType.ADMIN }
-            }),
-            prisma.role.upsert({
-                where: { name: RoleType.MANAGER },
-                update: {},
-                create: { name: RoleType.MANAGER }
-            }),
-            prisma.role.upsert({
-                where: { name: RoleType.MEMBER },
-                update: {},
-                create: { name: RoleType.MEMBER }
-            })
-        ]);
-        await Promise.all([
-            prisma.plan.create({
-                data: {
-                    name: 'Basic',
-                    priceInCents: 9900,
-                    maxUsers: 5,
-                },
-            }),
-            prisma.plan.create({
-                data: {
-                    name: 'Pro',
-                    priceInCents: 19900,
-                    maxUsers: 12,
-                    stripePriceId: process.env.PRO_PRICE_ID
-                },
-            }),
-            prisma.plan.create({
-                data: {
-                    name: 'Gold',
-                    priceInCents: 29900,
-                    maxUsers: 20,
-                    stripePriceId: process.env.GOLD_PRICE_ID
-                },
-            }),
-        ]);
-    });
-    
+    beforeEach(async () => await resetTestDB());
+
     afterAll(async () => {
-        await prisma.$disconnect();
+        await disconnectTestDB();
+        await module.close();
+        if (jqService) await jqService.close();
     });
 
-    it('AuthService should be defined', () => expect(authService).toBeDefined());
+    it('Services should be defined', () => {
+        expect(authService).toBeDefined();
+        expect(jqService).toBeDefined();
+        expect(prisma).toBeDefined();
+        expect(config).toBeDefined();
+    });
 
-    it('PrismaService should be defined', () => expect(prisma).toBeDefined());
-
-    it('Register a new user and tenant', async () => {
+    it('Register a new tenant and admin', async () => {
         const registerDto: RegisterDTO = {
-            companyName: 'Test Company',
-            email: 'admin@example.com',
-            password: 'password1234',
+            companyName: 'New Test Company',
+            email: 'admin@newtestcom.com',
+            password: config.get('PASSWORD') as string,
             plan: PlanType.BASIC
         };
+        const admin = await authService.register(registerDto);
+        expect(admin.email).toBe(registerDto.email);
+    });
 
-        const newUser = await authService.register(registerDto);
-        expect(newUser.email).toBe(registerDto.email);
+    it('Login a user', async () => {
+        const loginDto: LoginDTO = {
+            email: 'user@test.com',
+            password: config.get('PASSWORD') as string
+        };
+        const tokens = await authService.login(loginDto);
+        expect(tokens).not.toBeNull();
+    });
+
+    it('Refresh a user token', async () => {
+        const loginDto: LoginDTO = {
+            email: 'user@test.com',
+            password: config.get('PASSWORD') as string
+        };
+        const tokens = await authService.login(loginDto);
+        const refreshToken = await authService.refresh(tokens.refreshToken);
+        expect(refreshToken).not.toBeNull();
     });
 })
