@@ -52,4 +52,9 @@ export class JobQueueService {
             attempts: 3
         });
     }
+
+    // Close queue connection
+    async close() {
+        await this.emailQueue.close();
+    }
 }
