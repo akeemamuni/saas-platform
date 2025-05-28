@@ -9,7 +9,10 @@ import { MailerModule } from '../mailer/mailer.module';
     exports: [JobQueueService]
 })
 export class JobModule implements OnModuleInit, OnModuleDestroy {
-    constructor(private readonly emailProcessor: EmailProcessor) {}
+    constructor(
+        private readonly emailProcessor: EmailProcessor,
+        private readonly jqService: JobQueueService
+    ) {}
 
     async onModuleInit() {
         this.emailProcessor.start();
@@ -17,5 +20,6 @@ export class JobModule implements OnModuleInit, OnModuleDestroy {
 
     async onModuleDestroy() {
         await this.emailProcessor.stop();
+        await this.jqService.close();
     }
 }
