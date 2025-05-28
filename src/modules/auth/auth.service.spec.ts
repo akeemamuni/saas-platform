@@ -10,7 +10,6 @@ import { JwtModule } from 'src/shared/jwt/jwt.module';
 import { CacheModule } from 'src/shared/cache/cache.module';
 import { JobModule } from 'src/shared/job/job.module';
 import { JobQueueService } from 'src/shared/job/job-queue.service';
-import { resetTestDB, disconnectTestDB } from 'src/shared/utils/test-db.handler';
 
 describe('Authentication service (integration)', () => {
     let module: TestingModule;
@@ -18,6 +17,7 @@ describe('Authentication service (integration)', () => {
     let jqService: JobQueueService;
     let prisma: PrismaService;
     let config: ConfigService;
+    let tokens: { accessToken: string, refreshToken: string };
 
     beforeAll(async () => {
         module = await Test.createTestingModule({
@@ -38,10 +38,8 @@ describe('Authentication service (integration)', () => {
        config = module.get(ConfigService);
     });
 
-    beforeEach(async () => await resetTestDB());
-
     afterAll(async () => {
-        await disconnectTestDB();
+        await prisma.$disconnect();
         await module.close();
         if (jqService) await jqService.close();
     });
@@ -64,22 +62,19 @@ describe('Authentication service (integration)', () => {
         expect(admin.email).toBe(registerDto.email);
     });
 
-    it('Login a user', async () => {
+    it('Login user', async () => {
         const loginDto: LoginDTO = {
-            email: 'user@test.com',
+            email: 'admin@newtestcom.com',
             password: config.get('PASSWORD') as string
         };
-        const tokens = await authService.login(loginDto);
-        expect(tokens).not.toBeNull();
+        tokens = await authService.login(loginDto);
+        expect(tokens.accessToken).not.toBeNull();
+        expect(tokens.refreshToken).not.toBeNull();
     });
 
-    it('Refresh a user token', async () => {
-        const loginDto: LoginDTO = {
-            email: 'user@test.com',
-            password: config.get('PASSWORD') as string
-        };
-        const tokens = await authService.login(loginDto);
-        const refreshToken = await authService.refresh(tokens.refreshToken);
-        expect(refreshToken).not.toBeNull();
+    it('Refresh user token', async () => {
+        const newTokens = await authService.refresh(tokens.refreshToken);
+        expect(newTokens.accessToken).not.toBeNull();
+        expect(newTokens.refreshToken).not.toBeNull();
     });
 })
