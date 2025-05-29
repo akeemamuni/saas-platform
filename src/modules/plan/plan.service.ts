@@ -13,7 +13,9 @@ export class PlanService {
         const allPlans = await this.cache.get('allPlans');
         if (allPlans) return allPlans;
 
-        const plans = await this.prisma.plan.findMany();
+        const plans = await this.prisma.plan.findMany({
+            orderBy: { priceInCents: 'asc' }
+        });
         if (plans) await this.cache.set('allPlans', plans, 1000*60*60*12);
         return plans;
     }
