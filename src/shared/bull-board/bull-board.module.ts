@@ -1,18 +1,21 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { JobModule } from '../job/job.module';
 import { JobQueueService } from '../job/job-queue.service';
+import { Server } from 'http';
+import { promisify } from 'util';
 import express from 'express';
 import basicAuth from 'express-basic-auth';
 
 @Module({imports: [JobModule]})
-export class BullBoardModule implements OnModuleInit {
+export class BullBoardModule implements OnModuleInit, OnModuleDestroy {
     private readonly queueDashboard = express();
     private port: string | undefined;
     private password: string;
+    private server: Server;
 
     constructor(
         private readonly jqService: JobQueueService,
@@ -39,8 +42,16 @@ export class BullBoardModule implements OnModuleInit {
             basicAuth({users: {admin: this.password}, challenge: true}), 
             serverAdapter.getRouter()
         );
-        this.queueDashboard.listen(this.port, () => {
+        this.server = this.queueDashboard.listen(this.port, () => {
             console.log(`Queue board running on :${this.port}/queues`);
         });
+    }
+
+    async onModuleDestroy() {
+        if (this.server) {
+            const closeServer = promisify(this.server.close).bind(this.server);
+            await closeServer();
+            // console.log('Queue dashboard server closed...');
+        }
     }
 }
