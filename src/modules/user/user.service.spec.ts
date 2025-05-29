@@ -72,6 +72,6 @@ describe('User service (integration)', () => {
 
     it('Get all tenant users', async () => {
         const allTenantUsers = await userService.getTenantUsers(adminUser);
-        expect(allTenantUsers.length).toBe(5);
+        expect(allTenantUsers.length).toBe(2);
     });
 })

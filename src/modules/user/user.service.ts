@@ -78,6 +78,7 @@ export class UserService {
 
         const tenantUsers = await this.prisma.user.findMany({
             where: { tenantId: user.tenantId },
+            orderBy: { role: { name: 'asc'} },
             include: { role: true }
         });
         if (tenantUsers) {
