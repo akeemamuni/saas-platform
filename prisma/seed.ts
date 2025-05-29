@@ -33,8 +33,8 @@ async function main() {
         prisma.plan.create({
             data: {
                 name: 'Basic',
-                priceInCents: 9900,
-                maxUsers: 5,
+                priceInCents: 0,
+                maxUsers: 2,
             },
         }),
         prisma.plan.create({
@@ -88,27 +88,6 @@ async function main() {
                 tenantId: tenants[0].id,
                 roleId: adminRole.id,
             },
-            {
-                name: 'Brian Thomas',
-                email: 'brian.t@seed.com',
-                password: passwordHash,
-                tenantId: tenants[0].id,
-                roleId: managerRole.id,
-            },
-            {
-                name: 'Karin James',
-                email: 'k.james@seed.com',
-                password: passwordHash,
-                tenantId: tenants[0].id,
-                roleId: memberRole.id,
-            },
-            {
-                name: 'Okoro Micheal',
-                email: 'okoro.m@seed.com',
-                password: passwordHash,
-                tenantId: tenants[0].id,
-                roleId: memberRole.id,
-            },
             // Second company
             {
                 name: 'Thomas Andrej',
@@ -117,13 +96,6 @@ async function main() {
                 tenantId: tenants[1].id,
                 roleId: adminRole.id,
             },
-            {
-                name: 'Sara Clarence',
-                email: 'sc@seed.com',
-                password: passwordHash,
-                tenantId: tenants[1].id,
-                roleId: managerRole.id,
-            },
             // Third company
             {
                 name: 'Julius Adamson',
@@ -131,7 +103,14 @@ async function main() {
                 password: passwordHash,
                 tenantId: tenants[2].id,
                 roleId: adminRole.id,
-            }
+            },
+            {
+                name: 'Sara Clarence',
+                email: 'sc@seed.com',
+                password: passwordHash,
+                tenantId: tenants[2].id,
+                roleId: memberRole.id,
+            },
         ],
         skipDuplicates: true
     });
