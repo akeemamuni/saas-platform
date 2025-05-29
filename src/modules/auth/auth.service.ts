@@ -54,11 +54,10 @@ export class AuthService {
 
     async register(payload: RegisterDTO) {
         // const token = this.configService.get<string>('JWT_SECRET');
-        const { companyName, adminName, email, password, plan } = payload;
+        const { companyName, adminName, email, password } = payload;
         // Find new tenant selected plan
-        const selectedPlan = await this.prisma.plan.findFirst({where: {name: plan}});
-        // Added layer of checking plan other than DTO
-        if (!selectedPlan) throw new Error('Invalid plan..');
+        const defaultPlan = await this.prisma.plan.findFirst({ where: { name: 'Basic' } });
+        if (!defaultPlan) throw new Error('Default plan not found..');
         // Hash password
         const hashedPassword = await hashValue(password);
 
@@ -71,11 +70,10 @@ export class AuthService {
                             name: companyName,
                             subscription: {
                                 create: {
-                                    planId: selectedPlan.id,
+                                    planId: defaultPlan.id,
                                     status: SubscriptionStatus.ACTIVE,
-                                    // stripeSubId: `invalid-${new Date()}`,
                                     startDate: new Date(),
-                                    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                    // endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
                                 }
                             }
                         }
@@ -93,10 +91,10 @@ export class AuthService {
                     const adminUser = await tx.user.create({
                         data: {
                             name: adminName || 'Admin',
-                            email: email,
                             password: hashedPassword,
                             tenantId: newTenant.id,
-                            roleId: adminRole.id
+                            roleId: adminRole.id,
+                            email
                         }
                     });
                     return adminUser;
@@ -128,10 +126,10 @@ export class AuthService {
             where: { email },
             include: { role: true}
         });
-        if (!user) throw new Error('Invalid credentials...');
+        if (!user) throw new BadRequestException('Invalid credentials...');
         // Verify password
         const verified = verifyValue(password, user.password);
-        if (!verified) throw new Error('Invalid credentials...');
+        if (!verified) throw new BadRequestException('Invalid credentials...');
 
         // Create and return JWT tokens
         return await this.genAccessAndRefreshToken(user);

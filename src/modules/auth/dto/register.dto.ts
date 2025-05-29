@@ -16,6 +16,7 @@ export class RegisterDTO extends LoginDTO {
     @IsString()
     adminName?: string;
 
+    @IsOptional()
     @IsEnum(PlanType, {message: 'Please input a valid plan..'})
-    plan: PlanType;
+    plan?: PlanType;
 }
