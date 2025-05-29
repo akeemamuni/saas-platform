@@ -13,7 +13,9 @@ export class RoleService {
         const allRoles = await this.cache.get('allRoles');
         if (allRoles) return allRoles;
 
-        const roles = await this.prisma.role.findMany();
+        const roles = await this.prisma.role.findMany({
+            orderBy: { name: 'asc' }
+        });
         if (roles) await this.cache.set('allRoles', roles, 1000*60*60*12);
         return roles;
     }
