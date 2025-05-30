@@ -15,6 +15,7 @@ import { JobModule } from './shared/job/job.module';
 import { BullBoardModule } from './shared/bull-board/bull-board.module';
 import { MailerModule } from './shared/mailer/mailer.module';
 import { CacheModule } from './shared/cache/cache.module';
+import { AppLoggerModule } from './shared/app-logger/app-logger.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { CacheModule } from './shared/cache/cache.module';
     JobModule,
     BullBoardModule,
     MailerModule,
-    CacheModule
+    CacheModule,
+    AppLoggerModule
   ],
   controllers: [AppController],
   providers: [AppService],
